@@ -1,9 +1,15 @@
 import axios from 'axios';
 
 // Determine API URL based on environment
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? process.env.REACT_APP_API_BASE_URL 
-  : 'http://localhost:5000/api';
+let API_URL;
+
+if (process.env.NODE_ENV === 'production') {
+  // For production - use the full backend URL
+  API_URL = 'https://user-management-backend-71i5.onrender.com/api';
+} else {
+  // For local development
+  API_URL = 'http://localhost:5000/api';
+}
 
 console.log('🔗 API URL:', API_URL);
 
@@ -22,7 +28,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`🚀 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   },
   (error) => {
@@ -39,6 +45,8 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('❌ Response error:', error.response?.data || error.message);
+    console.error('📡 Response status:', error.response?.status);
+    console.error('🔗 Request URL:', error.config?.baseURL + error.config?.url);
     
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
