@@ -6,9 +6,7 @@ const VerificationFailed = () => {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.iconContainer}>
-          <svg style={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <div style={styles.failedIcon}>✗</div>
         </div>
         <h1 style={styles.title}>Verification Failed 😔</h1>
         <p style={styles.message}>
@@ -35,6 +33,7 @@ const styles = {
     minHeight: '100vh',
     backgroundColor: '#f8f9fa',
     padding: '20px',
+    fontFamily: 'Arial, sans-serif'
   },
   card: {
     backgroundColor: 'white',
@@ -48,10 +47,17 @@ const styles = {
   iconContainer: {
     marginBottom: '1.5rem',
   },
-  icon: {
+  failedIcon: {
     width: '80px',
     height: '80px',
-    color: '#dc3545',
+    backgroundColor: '#dc3545',
+    color: 'white',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '40px',
+    fontWeight: 'bold',
     margin: '0 auto',
   },
   title: {
@@ -92,15 +98,6 @@ const styles = {
     border: '2px solid #007bff',
     transition: 'all 0.3s',
   },
-};
-
-// Add hover effects
-styles.primaryButton[':hover'] = {
-  backgroundColor: '#c82333',
-};
-styles.secondaryButton[':hover'] = {
-  backgroundColor: '#007bff',
-  color: 'white',
 };
 
 export default VerificationFailed;

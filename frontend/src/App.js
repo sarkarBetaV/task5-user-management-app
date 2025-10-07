@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { useAuth } from './context/AuthContext.js';  // Add .js extension
-import Login from './components/Login.js';  // Add .js extension
-import Register from './components/Register.js';  // Add .js extension
-import Dashboard from './components/Dashboard.js';  // Add .js extension
-import VerificationSuccess from './pages/VerificationSuccess.js';  // Add .js extension
-import VerificationFailed from './pages/VerificationFailed.js';  // Add .js extension
+import { useAuth } from './context/AuthContext.js';
+import Login from './components/Login.js';
+import Register from './components/Register.js';
+import Dashboard from './components/Dashboard.js';
+import VerificationSuccess from './pages/VerificationSuccess.js';
+import VerificationFailed from './pages/VerificationFailed.js';
 
 // Email Verification Component
 const EmailVerification = () => {
@@ -22,7 +22,9 @@ const EmailVerification = () => {
       }
     };
 
-    verifyToken();
+    if (token) {
+      verifyToken();
+    }
   }, [token, verifyEmail]);
 
   return (
@@ -51,6 +53,7 @@ function App() {
           path="/dashboard" 
           element={user ? <Dashboard /> : <Navigate to="/login" />} 
         />
+        {/* ✅ Add these verification routes */}
         <Route path="/verify-email/success" element={<VerificationSuccess />} />
         <Route path="/verify-email/failed" element={<VerificationFailed />} />
         <Route path="/verify-email/:token" element={<EmailVerification />} />
