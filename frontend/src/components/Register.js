@@ -12,7 +12,8 @@ const Register = () => {
     company: "",
   });
   const [loading, setLoading] = useState(false);
-  const { register, error, setError } = useAuth();
+  const [error, setError] = useState(""); // ✅ Add local error state
+  const { register } = useAuth(); // ✅ Only get register function
   const navigate = useNavigate();
 
   const handleChange = (e) => {
