@@ -21,29 +21,31 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration
-const corsOptions = {
+// CORS configuration - SIMPLIFIED
+const allowedOrigins = [
+  'https://user-management-frontend-amvt.onrender.com',
+  'http://localhost:3000'
+];
+
+app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'https://your-frontend-url.onrender.com',
-      'http://localhost:3000'
-    ];
-    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log('🚫 CORS blocked for origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+}));
 
-app.use(cors(corsOptions));
+// Handle preflight requests
+app.options('*', cors());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -72,7 +74,8 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     message: 'Server is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    allowedOrigins: allowedOrigins
   });
 });
 
@@ -94,9 +97,6 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-
 // Handle unhandled routes
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -107,7 +107,7 @@ app.use('*', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('🚨 Error:', err.stack);
+  console.error('🚨 Error:', err.message);
   
   if (err.message === 'Not allowed by CORS') {
     return res.status(403).json({
@@ -129,20 +129,16 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🌐 CORS enabled for: ${corsOptions.origin}`);
+  console.log(`🌐 CORS enabled for:`, allowedOrigins);
+  console.log(`🔗 Client URL: ${process.env.CLIENT_URL}`);
   
   try {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully');
     
     // Sync database
-    if (process.env.NODE_ENV === 'production') {
-      await sequelize.sync({ alter: false }); // Use false to be safe
-      console.log('✅ Database synced');
-    } else {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database synced with alter');
-    }
+    await sequelize.sync({ alter: false });
+    console.log('✅ Database synced');
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
     process.exit(1);
