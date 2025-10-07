@@ -30,21 +30,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// FIX 2: Rate limiting with proxy fix
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: {
-    status: 'error',
-    message: 'Too many requests from this IP, please try again later.'
-  },
-  keyGenerator: (req, res) => {
-    // Use Render's forwarded IP
-    return req.headers['x-forwarded-for'] || req.ip;
-  }
-});
-app.use(limiter);
-
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -52,70 +37,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Test routes (add these for debugging)
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'API test endpoint works!',
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.post('/api/test-register', (req, res) => {
-  res.json({ 
-    message: 'Register test endpoint works!',
-    received: req.body,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// ✅ ADD COMPREHENSIVE EMAIL TEST ROUTE HERE
-app.get('/api/test-email-complete', async (req, res) => {
-  try {
-    console.log('🔍 === EMAIL DEBUG START ===');
-    
-    // Check environment variables
-    console.log('📋 Environment Variables:');
-    console.log('   ELASTIC_EMAIL_USER:', process.env.ELASTIC_EMAIL_USER || 'NOT SET');
-    console.log('   ELASTIC_EMAIL_API_KEY:', process.env.ELASTIC_EMAIL_API_KEY ? 'SET (length: ' + process.env.ELASTIC_EMAIL_API_KEY.length + ')' : 'NOT SET');
-    console.log('   CLIENT_URL:', process.env.CLIENT_URL || 'NOT SET');
-    
-    const { sendVerificationEmail } = await import('./utils/emailService.js');
-    const testEmail = 'ship1on2sarkar@gmail.com';
-    const testToken = 'test-' + Date.now();
-    
-    console.log('🔄 Testing email to:', testEmail);
-    
-    const result = await sendVerificationEmail(testEmail, testToken);
-    
-    console.log('📊 Email result:', result);
-    console.log('🔚 === EMAIL DEBUG END ===');
-    
-    res.json({
-      status: result ? 'success' : 'failed',
-      message: result ? 'Email sent successfully' : 'Email failed',
-      debug: {
-        env_vars_set: {
-          elastic_email_user: !!process.env.ELASTIC_EMAIL_USER,
-          elastic_email_api_key: !!process.env.ELASTIC_EMAIL_API_KEY,
-          client_url: !!process.env.CLIENT_URL
-        },
-        test_email: testEmail,
-        api_key_length: process.env.ELASTIC_EMAIL_API_KEY ? process.env.ELASTIC_EMAIL_API_KEY.length : 0
-      }
-    });
-    
-  } catch (error) {
-    console.error('💥 DEBUG ERROR:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Debug test failed',
-      error: error.message,
-      stack: error.stack
-    });
-  }
-});
-
-// Health check endpoints
+// ✅ FIX: Health checks and test routes FIRST (NO rate limiting)
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -132,7 +54,39 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Main routes
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API test endpoint works!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/test-register', (req, res) => {
+  res.json({ 
+    message: 'Register test endpoint works!',
+    received: req.body,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ✅ FIX: Rate limiting ONLY for API routes (after health checks)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    status: 'error',
+    message: 'Too many requests from this IP, please try again later.'
+  },
+  keyGenerator: (req, res) => {
+    // Use Render's forwarded IP
+    return req.headers['x-forwarded-for'] || req.ip;
+  }
+});
+
+// Apply rate limiting only to API routes
+app.use('/api', limiter);
+
+// Main routes (with rate limiting)
 app.use('/api', authRoutes);
 
 // Handle preflight requests
