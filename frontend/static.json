@@ -1,7 +1,6 @@
 {
   "root": "build/",
   "routes": {
-    "/verify-email/*": "/index.html",
     "/**": "/index.html"
   },
   "headers": {
