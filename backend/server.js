@@ -68,6 +68,53 @@ app.post('/api/test-register', (req, res) => {
   });
 });
 
+// ✅ ADD COMPREHENSIVE EMAIL TEST ROUTE HERE
+app.get('/api/test-email-complete', async (req, res) => {
+  try {
+    console.log('🔍 === EMAIL DEBUG START ===');
+    
+    // Check environment variables
+    console.log('📋 Environment Variables:');
+    console.log('   ELASTIC_EMAIL_USER:', process.env.ELASTIC_EMAIL_USER || 'NOT SET');
+    console.log('   ELASTIC_EMAIL_API_KEY:', process.env.ELASTIC_EMAIL_API_KEY ? 'SET (length: ' + process.env.ELASTIC_EMAIL_API_KEY.length + ')' : 'NOT SET');
+    console.log('   CLIENT_URL:', process.env.CLIENT_URL || 'NOT SET');
+    
+    const { sendVerificationEmail } = await import('./utils/emailService.js');
+    const testEmail = 'ship1on2sarkar@gmail.com';
+    const testToken = 'test-' + Date.now();
+    
+    console.log('🔄 Testing email to:', testEmail);
+    
+    const result = await sendVerificationEmail(testEmail, testToken);
+    
+    console.log('📊 Email result:', result);
+    console.log('🔚 === EMAIL DEBUG END ===');
+    
+    res.json({
+      status: result ? 'success' : 'failed',
+      message: result ? 'Email sent successfully' : 'Email failed',
+      debug: {
+        env_vars_set: {
+          elastic_email_user: !!process.env.ELASTIC_EMAIL_USER,
+          elastic_email_api_key: !!process.env.ELASTIC_EMAIL_API_KEY,
+          client_url: !!process.env.CLIENT_URL
+        },
+        test_email: testEmail,
+        api_key_length: process.env.ELASTIC_EMAIL_API_KEY ? process.env.ELASTIC_EMAIL_API_KEY.length : 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('💥 DEBUG ERROR:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Debug test failed',
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Health check endpoints
 app.get('/health', (req, res) => {
   res.json({ 
