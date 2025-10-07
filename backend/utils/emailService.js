@@ -19,7 +19,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       body: JSON.stringify({
         sender: {
           name: 'User Management System',
-          email: 'ship1on2sarkar@gmail.com' // Use your VERIFIED Gmail
+          email: 'sarkarshiponb@gmail.com' // Use your VERIFIED Gmail
         },
         to: [
           {
