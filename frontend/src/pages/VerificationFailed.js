@@ -1,7 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const VerificationFailed = () => {
+  const location = useLocation();
+  const errorMessage = location.state?.errorMessage || 'The verification link is invalid or has expired.';
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -10,14 +13,14 @@ const VerificationFailed = () => {
         </div>
         <h1 style={styles.title}>Verification Failed 😔</h1>
         <p style={styles.message}>
-          The verification link is invalid or has expired. Please try registering again or contact support if the problem persists.
+          {errorMessage}
         </p>
         <div style={styles.buttonContainer}>
           <Link to="/register" style={styles.primaryButton}>
             Register Again
           </Link>
-          <Link to="/" style={styles.secondaryButton}>
-            Go to Homepage
+          <Link to="/login" style={styles.secondaryButton}>
+            Go to Login
           </Link>
         </div>
       </div>
@@ -25,6 +28,7 @@ const VerificationFailed = () => {
   );
 };
 
+// ... keep your existing styles the same ...
 const styles = {
   container: {
     display: 'flex',

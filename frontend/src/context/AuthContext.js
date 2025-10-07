@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authService } from '../services/authService.js';  // Add .js extension
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -14,72 +14,64 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      authService.verifyToken()
-        .then(userData => {
-          setUser(userData);
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const userData = await authService.verifyToken();
+          setUser(userData.user);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('token');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  const login = async (email, password) => {
+  // ✅ ADD THIS verifyEmail FUNCTION
+  const verifyEmail = async (token) => {
     try {
-      setError('');
-      const response = await authService.login(email, password);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
+      console.log('🔍 Verifying email with token:', token);
+      const response = await authService.verifyEmail(token);
+      console.log('✅ Email verification response:', response);
       return response;
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed');
+      console.error('❌ Email verification failed:', error);
       throw error;
     }
+  };
+
+  const login = async (email, password) => {
+    const response = await authService.login(email, password);
+    if (response.success) {
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+    }
+    return response;
   };
 
   const register = async (username, email, password, designation) => {
-    try {
-      setError('');
-      const response = await authService.register(username, email, password, designation);
-      return response;
-    } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
-      throw error;
-    }
-  };
-
-  const verifyEmail = async (token) => {
-    try {
-      const response = await authService.verifyEmail(token);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await authService.register(username, email, password, designation);
+    return response;
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem('token');
+    setUser(null);
   };
 
   const value = {
     user,
     login,
     register,
-    verifyEmail,
     logout,
-    error,
-    setError,
+    verifyEmail, // ✅ MAKE SURE THIS IS INCLUDED
     loading
   };
 
