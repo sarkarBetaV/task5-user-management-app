@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { authService } from "../services/authService";
-import UserTable from "./UserTable";
+import { useAuth } from "../context/AuthContext.js";  // Add .js
+import { authService } from "../services/authService.js";  // Add .js
+import UserTable from "./UserTable.js";  // Add .js
 
 const Dashboard = () => {
   const { user, logout } = useAuth();

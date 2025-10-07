@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
-import Login from './components/Login';
-import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import VerificationSuccess from './pages/VerificationSuccess';
-import VerificationFailed from './pages/VerificationFailed';
+import { useAuth } from './context/AuthContext.js';  // Add .js extension
+import Login from './components/Login.js';  // Add .js extension
+import Register from './components/Register.js';  // Add .js extension
+import Dashboard from './components/Dashboard.js';  // Add .js extension
+import VerificationSuccess from './pages/VerificationSuccess.js';  // Add .js extension
+import VerificationFailed from './pages/VerificationFailed.js';  // Add .js extension
 
 // Email Verification Component
 const EmailVerification = () => {

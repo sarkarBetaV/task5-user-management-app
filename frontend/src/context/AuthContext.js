@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authService } from '../services/authService';
+import { authService } from '../services/authService.js';  // Add .js extension
 
 const AuthContext = createContext();
 
@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // FIX: Add designation parameter here
   const register = async (username, email, password, designation) => {
     try {
       setError('');
