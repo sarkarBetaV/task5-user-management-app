@@ -26,7 +26,8 @@ app.use(
 app.use(
   cors({
     origin: [
-      "https://user-management-frontend-amvt.onrender.com",
+      "https://user-management-frontend-jhrv.onrender.com", // ✅ ADD THIS
+      "https://user-management-frontend-amvt.onrender.com", // ✅ KEEP THIS
       "http://localhost:3000",
     ],
     credentials: true,
