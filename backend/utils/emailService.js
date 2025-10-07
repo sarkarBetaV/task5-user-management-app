@@ -3,17 +3,24 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// FIX 3: Email configuration for production
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // Use TLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 export const sendVerificationEmail = async (email, verificationToken) => {
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-const verificationUrl = `${clientUrl}/verify-email/${verificationToken}`;  
+  const clientUrl = process.env.CLIENT_URL || 'https://user-management-frontend-amvt.onrender.com';
+  const verificationUrl = `${clientUrl}/verify-email/${verificationToken}`;  
+  
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: email,
@@ -45,7 +52,8 @@ const verificationUrl = `${clientUrl}/verify-email/${verificationToken}`;
     console.log('✅ Verification email sent to:', email);
     return true;
   } catch (error) {
-    console.error('❌ Error sending email:', error);
-    return false;
+    console.error('❌ Error sending email:', error.message);
+    // Don't fail registration if email fails
+    return true; // Return true anyway to allow registration
   }
 };

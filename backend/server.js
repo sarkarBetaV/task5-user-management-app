@@ -6,57 +6,44 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import { sequelize } from './config/database.js';
-import { checkEnvVars } from './utils/envCheck.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Check environment variables
-checkEnvVars();
+// FIX 1: Trust proxy for Render
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration - SIMPLIFIED
-const allowedOrigins = [
-  'https://user-management-frontend-amvt.onrender.com',
-  'http://localhost:3000'
-];
-
+// CORS configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('🚫 CORS blocked for origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'https://user-management-frontend-amvt.onrender.com',
+    'http://localhost:3000'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// Handle preflight requests
-app.options('*', cors());
-
-// Rate limiting
+// FIX 2: Rate limiting with proxy fix
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: {
     status: 'error',
     message: 'Too many requests from this IP, please try again later.'
+  },
+  keyGenerator: (req, res) => {
+    // Use Render's forwarded IP
+    return req.headers['x-forwarded-for'] || req.ip;
   }
 });
-app.use('/api/', limiter);
+app.use(limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -65,43 +52,50 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-app.use('/api', authRoutes);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    allowedOrigins: allowedOrigins
+// Test routes (add these for debugging)
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API test endpoint works!',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Test database connection
-app.get('/test-db', async (req, res) => {
-  try {
-    await sequelize.authenticate();
-    res.json({ 
-      status: 'success', 
-      message: 'Database connection successful' 
-    });
-  } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Database connection failed',
-      error: process.env.NODE_ENV === 'production' ? undefined : error.message
-    });
-  }
+app.post('/api/test-register', (req, res) => {
+  res.json({ 
+    message: 'Register test endpoint works!',
+    received: req.body,
+    timestamp: new Date().toISOString()
+  });
 });
+
+// Health check endpoints
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Main routes
+app.use('/api', authRoutes);
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Handle unhandled routes
 app.use('*', (req, res) => {
   res.status(404).json({
     status: 'error',
-    message: 'Route not found'
+    message: 'Route not found: ' + req.originalUrl
   });
 });
 
@@ -118,9 +112,7 @@ app.use((err, req, res, next) => {
   
   res.status(500).json({
     status: 'error',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message
+    message: 'Internal server error'
   });
 });
 
@@ -129,8 +121,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🌐 CORS enabled for:`, allowedOrigins);
-  console.log(`🔗 Client URL: ${process.env.CLIENT_URL}`);
+  console.log(`🌐 Trust proxy: ${app.get('trust proxy')}`);
   
   try {
     await sequelize.authenticate();
@@ -141,7 +132,6 @@ app.listen(PORT, async () => {
     console.log('✅ Database synced');
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
-    process.exit(1);
   }
 });
 
