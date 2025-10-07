@@ -3,13 +3,8 @@ import axios from "axios";
 // Determine API URL based on environment
 let API_URL;
 
-if (process.env.NODE_ENV === "production") {
-  // For production - use the full backend URL
-  API_URL = "https://user-management-backend-71i5.onrender.com/api";
-} else {
-  // For local development
-  API_URL = "http://localhost:5000/api";
-}
+// Always use production backend - remove localhost entirely
+API_URL = "https://user-management-backend-71i5.onrender.com/api";
 
 console.log("🔗 API URL:", API_URL);
 
@@ -82,7 +77,7 @@ export const authService = {
       console.log("Calling verification API with token:", token);
       const response = await api.get(`/verify-email/${token}`);
 
-      // ✅ Handle both response formats for compatibility
+      // Handle both response formats for compatibility
       const result = response.data;
 
       // If backend returns { status: 'success' }, convert to { success: true }
@@ -98,7 +93,7 @@ export const authService = {
     } catch (error) {
       console.error("Email verification API error:", error);
 
-      // ✅ Provide consistent error response
+      // Provide consistent error response
       throw {
         response: {
           data: {
@@ -116,6 +111,11 @@ export const authService = {
 
   getUsers: async () => {
     const response = await api.get("/users");
+    return response.data;
+  },
+
+  blockUsers: async (userIds) => {
+    const response = await api.post("/users/block", { userIds });
     return response.data;
   },
 
