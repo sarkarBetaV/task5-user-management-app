@@ -5,14 +5,23 @@ const VerificationSuccess = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={styles.successIcon}>✓</div>
-        <h1 style={styles.title}>Email Verified Successfully!</h1>
+        <div style={styles.iconContainer}>
+          <svg style={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 style={styles.title}>Email Verified Successfully! 🎉</h1>
         <p style={styles.message}>
-          Your email has been verified successfully. You can now log in to your account.
+          Your email has been successfully verified. You can now access all features of your account.
         </p>
-        <Link to="/login" style={styles.button}>
-          Go to Login
-        </Link>
+        <div style={styles.buttonContainer}>
+          <Link to="/login" style={styles.primaryButton}>
+            Continue to Login
+          </Link>
+          <Link to="/" style={styles.secondaryButton}>
+            Go to Homepage
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -24,41 +33,74 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#f8f9fa',
+    padding: '20px',
   },
   card: {
     backgroundColor: 'white',
     padding: '3rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    borderRadius: '15px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
     textAlign: 'center',
-    maxWidth: '500px'
+    maxWidth: '500px',
+    width: '100%',
   },
-  successIcon: {
-    fontSize: '4rem',
+  iconContainer: {
+    marginBottom: '1.5rem',
+  },
+  icon: {
+    width: '80px',
+    height: '80px',
     color: '#28a745',
-    marginBottom: '1rem'
+    margin: '0 auto',
   },
   title: {
-    color: '#333',
-    marginBottom: '1rem'
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    color: '#28a745',
+    marginBottom: '1rem',
   },
   message: {
-    color: '#666',
-    marginBottom: '2rem',
     fontSize: '1.1rem',
-    lineHeight: '1.5'
+    color: '#666',
+    lineHeight: '1.6',
+    marginBottom: '2rem',
   },
-  button: {
-    display: 'inline-block',
-    padding: '0.75rem 2rem',
-    backgroundColor: '#007bff',
+  buttonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  primaryButton: {
+    backgroundColor: '#28a745',
     color: 'white',
+    padding: '12px 30px',
+    borderRadius: '8px',
     textDecoration: 'none',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    transition: 'background-color 0.2s'
-  }
+    fontWeight: 'bold',
+    fontSize: '1.1rem',
+    transition: 'background-color 0.3s',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    color: '#007bff',
+    padding: '12px 30px',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    fontSize: '1.1rem',
+    border: '2px solid #007bff',
+    transition: 'all 0.3s',
+  },
+};
+
+// Add hover effects
+styles.primaryButton[':hover'] = {
+  backgroundColor: '#218838',
+};
+styles.secondaryButton[':hover'] = {
+  backgroundColor: '#007bff',
+  color: 'white',
 };
 
 export default VerificationSuccess;
