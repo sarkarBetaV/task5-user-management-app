@@ -20,7 +20,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       body: JSON.stringify({
         sender: {
           name: 'User Management System',
-          email: 'ship1on2sarkar@gmail.com' // Your verified Brevo sender
+          email: 'sarkarshiponb@gmail.com' // Your verified Brevo sender
         },
         to: [
           {
